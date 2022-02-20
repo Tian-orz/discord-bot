@@ -1,6 +1,6 @@
 # discord-bot
 
-## 详细教程
+## Class1 详细教程
 https://mirror.xyz/0x3595801c3bd933E1a97c5c679B77A4306739223f/X1E-WmxTxfqlybAV0hUbwBjISsG7THXlpaQhB9tcjhA
 
 ## 设置
