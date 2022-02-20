@@ -2,15 +2,43 @@
   "name": "discord-bot",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "main.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "electron .",
+    "build": "electron-builder --win --x64"
+  },
+  "build": {
+    "appId": "com.discord-bot",
+    "asar": false,
+    "asarUnpack": [
+      "**/node_modules/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "src/main",
+        "to": "app.asar.unpacked/download"
+      }
+    ],
+    "win": {
+      "target": [
+        "portable"
+      ],
+      "icon": "build/icon.ico"
+    }
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "axios": "^0.25.0",
-    "dotenv": "^16.0.0"
+    "dotenv": "^16.0.0",
+    "electron-store": "^8.0.1",
+    "express": "^4.17.2",
+    "sound-play": "^1.1.0"
+  },
+  "devDependencies": {
+    "electron": "^16.0.6",
+    "electron-builder": "^22.14.13",
+    "electron-reloader": "^1.2.2"
   }
 }

@@ -1,19 +1,16 @@
-const fs = require('fs');
 const axios = require("axios");
-require('dotenv').config()
 
-const proxyHost = process.env.PROXY_HOST // 代理ip
-const proxyPort = process.env.PROXY_PORT // 代理端口号
-const guild_id = process.env.GUILD_ID // 群id
-const channel_id = process.env.CHANNEL_ID // 频道id
-const account1 = process.env.ACCOUNT1 // 账号1的authorization
-const account2 = process.env.ACCOUNT2 // 账号2的authorization
+let proxyHost = '' // 代理ip
+let proxyPort = '' // 代理端口号
+let guild_id = '' // 群id
+let channel_id = '' // 频道id
+let account1 = '' // 账号1的authorization
+let account2 = '' // 账号2的authorization
 let message_id = '' // 回复的消息id
-const time = process.env.TIME // 聊天间隔 单位:秒
-const responseAt = process.env.RESPONSEAT // 1 开启对话@ 0关闭对话@ 0.1-0.9 概率@
+let timeInterval = '' // 聊天间隔 单位:秒
+let responseAt = 0 // 1 开启对话@ 0关闭对话@ 0.1-0.9 概率@
 let counter = 0 // 计数器
-const text_list = fs.readFileSync('text_list.txt').toString().split('\n');
-
+let text_list = []
 
 /**
  * 开聊
@@ -73,10 +70,41 @@ const sleep = (ms) => {
     return new Promise((resolve) => setTimeout(resolve, ms));
 };
 
-const main = async () => {
-    while (counter<text_list.length) {
-        chat_star()
-        await sleep(time*1000)
+const main = async (data) =>{
+    account1 = data.authorization1
+    account2 = data.authorization2
+    proxyHost = data.proxyHost
+    proxyPort = data.proxyPort
+    guild_id = data.guildId
+    channel_id = data.channelId
+    timeInterval = data.timeInterval
+    text_list = data.txtList
+    model = data.model
+    responseAt = data.responseAt
+    if(data.model === 'xh'){
+        while (true) {
+            chat_star()
+            await sleep(timeInterval*1000)
+            if(counter === text_list.length){
+                counter = 0
+            }
+        }
+    }else{
+        while (true) {
+            chat_star()
+            await sleep(timeInterval*1000)
+            if(counter === Number(data.chatNum)){
+                console.log('互聊任务结束')
+                process.send({
+                    action: 'stopDialogue'
+                });
+                process.exit() 
+            }
+        }
     }
 }
-main()
+
+process.on('message', function(m) {
+    console.log('子进程收到了消息:', m);
+    main(m)
+});

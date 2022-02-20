@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Discord Bots</title>
+    <script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.12/vue.min.js"></script>
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <link rel="stylesheet" href="./css//index.css">
+    <style>
+        *{
+            padding: 0;
+            margin: 0;
+            text-decoration: none;
+        }
+        .app{
+            display: flex;
+            height: 100vh;
+        }
+        .container{
+            flex: 1;
+            width: 0;
+            padding-left: 20px;
+            font-size: 14px;
+        }
+        .el-input{
+            width: 140px;
+            padding-right: 20px;
+        }
+        .el-input__inner{
+            border: none;
+            border-bottom: 1px solid #DCDFE6;
+            border-radius: 0;
+            padding: 0;
+        }
+        .el-checkbox {
+            margin-right: 10px;
+        }
+        .el-checkbox__label {
+            padding-left: 5px;
+        }
+        .proxy,.collect,.chat{
+            padding: 10px 0;
+        }
+      
+        
+        .title{
+            display: flex;
+            align-items: center;
+            padding: 10px 0;
+        }
+        .title i{
+            display: block;
+            margin-right: 5px;
+            width: 5px;
+            height: 20px;
+            border-radius: 10px;
+            background: #41b883;
+        }
+        .row{
+            display: flex;
+            align-items: center;
+            padding-bottom: 10px;
+        }
+        .cell{
+            display: flex;
+            align-items: baseline;
+            flex: 1;
+        }
+        .cell .label{
+            display: block;
+            width: 80px;
+            line-height: 28px;
+        }
+        .tips{
+            font-size: 12px;
+            color: #6c757d;
+            margin-left: 10px;
+        }
+        .heard{
+            padding: 40px 20px 40px 0;
+            text-align: center;
+        }
+        .introduce{
+            padding-left: 40px;
+        }
+        .introduce h1,h2 {
+            padding: 10px 0;
+            color: #3e3e3e;
+        }
+        .introduce a:-webkit-any-link {
+            color: #5865f2;
+            text-decoration: underline;
+        }
+        
+    </style>
+</head>
+
+<body>
+    <div id="app" class="app">
+        <div class="nav">
+            <ul>
+                <div class="logo">
+                    <embed src="./static/logo.svg" type="image/svg+xml" />
+                </div>
+                <li :class="currentMenu === 1 ? 'menu active' : 'menu'" @click="changeMenu(1)">
+                    <b></b>
+                    <b></b>
+                    <a href="#">
+                        <span class="icon"></span>
+                        <span class="navText">首页</span>
+                    </a>
+                </li>
+                <li :class="currentMenu === 2 ? 'menu active' : 'menu'" @click="changeMenu(2)">
+                    <b></b>
+                    <b></b>
+                    <a href="#">
+                        <span class="icon"></span>
+                        <span class="navText">互聊</span>
+                    </a>
+                </li>
+                <li :class="currentMenu === 3 ? 'menu active' : 'menu'" @click="changeMenu(3)">
+                    <b></b>
+                    <b></b>
+                    <a href="#">
+                        <span class="icon"></span>
+                        <span class="navText">监听</span>
+                    </a>
+                </li>
+                <li :class="currentMenu === 'about' ? 'menu active' : 'menu'" @click="changeMenu('about')">
+                    <b></b>
+                    <b></b>
+                    <a href="#">
+                        <span class="icon"></span>
+                        <span class="navText">关于</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+        <div class="container">
+            <div v-if="currentMenu === 1">
+                <div class="proxy">
+                    <div class="row">
+                        <div class="cell">
+                            <span class="label">用户Auth</span>
+                            <el-input size="mini" v-model="chat.authorization"></el-input>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="cell">
+                            <span class="label">代理ip</span>
+                            <el-input size="mini" v-model="chat.proxyHost"></el-input>
+                        </div>
+                        <div class="cell">
+                            <span class="label">端口</span>
+                            <el-input size="mini" v-model="chat.proxyPort"></el-input>
+                        </div>
+                    </div>
+                </div>
+                <div class="title"><i></i>话术抓取</div>
+                <div class="collect">
+                    <div class="row">
+                        <div class="cell">
+                            <span class="label">频道id</span>
+                            <el-input size="mini" v-model="chat.recordChannelId"></el-input>
+                        </div>
+                        <div class="cell">
+                            <span class="label">抓取数量</span>
+                            <el-input size="mini" v-model="chat.recordNum"></el-input>
+                        </div>
+                    </div>
+                    <el-button size="mini" @click="getChatRecord">抓取</el-button>
+                </div>
+                <div class="title"><i></i>自动水群</div>
+                <div class="chat">
+                    <div class="row">
+                        <div class="cell">
+                            <span class="label">频道id</span>
+                            <el-input size="mini" v-model="chat.channelId"></el-input>
+                        </div>
+                        <div class="cell">
+                            <span class="label">发言间隔(s)</span>
+                            <el-input size="mini" v-model="chat.timeInterval"></el-input>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="cell">
+                            <span class="label">话术路径</span>
+                            <el-input size="mini" v-model="chat.txtPath"></el-input>
+                        </div>
+                        <div class="cell">
+                            <el-button size="mini"  @click="loadTxt">加载</el-button>
+                            <span class="tips" v-if="chat.txtLoadState">加载成功：共{{chat.txtList.length}}条</span>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="cell">
+                            <span class="label">模式</span>
+                            <el-radio v-model="chat.model" label="xh">循环</el-radio>
+                            <el-radio v-model="chat.model" label="zd">指定数量</el-radio>
+                        </div>
+                        <div class="cell" v-if="chat.model === 'zd'">
+                            <el-input size="mini" v-model="chat.chatNum"></el-input>
+                        </div>
+                    </div>
+                </div>
+                <el-button v-if="!chat.runState" size="mini" @click="startChat">运行</el-button>
+                <el-button v-else size="mini" loading>运行中</el-button>
+                <el-button v-if="chat.runState" size="mini" @click="stopChat">停止</el-button>
+            </div>
+            <div v-if="currentMenu === 2">
+                <div class="title"><i></i>用户</div>
+                <div class="proxy">
+                    <div class="row">
+                        <div class="cell">
+                            <span class="label">用户1Auth</span>
+                            <el-input size="mini" v-model="dialogue.authorization1"></el-input>
+                        </div>
+                        <div class="cell">
+                            <span class="label">用户2Auth</span>
+                            <el-input size="mini" v-model="dialogue.authorization2"></el-input>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="cell">
+                            <span class="label">代理ip</span>
+                            <el-input size="mini" v-model="dialogue.proxyHost"></el-input>
+                        </div>
+                        <div class="cell">
+                            <span class="label">端口</span>
+                            <el-input size="mini" v-model="dialogue.proxyPort"></el-input>
+                        </div>
+                    </div>
+                </div>
+                <div class="title"><i></i>互水</div>
+                <div class="chat">
+                    <div class="row">
+                        <div class="cell">
+                            <span class="label">服务器id</span>
+                            <el-input size="mini" v-model="dialogue.guildId"></el-input>
+                        </div>
+                        <div class="cell">
+                            <span class="label">频道id</span>
+                            <el-input size="mini" v-model="dialogue.channelId"></el-input>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="cell">
+                            <span class="label">发言间隔(s)</span>
+                            <el-input size="mini" v-model="dialogue.timeInterval"></el-input>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="cell">
+                            <span class="label">话术路径</span>
+                            <el-input size="mini" v-model="dialogue.txtPath"></el-input>
+                        </div>
+                        <div class="cell">
+                            <el-button size="mini"  @click="loadDialogueTxt">加载</el-button>
+                            <span class="tips" v-if="dialogue.txtLoadState">加载成功：共{{dialogue.txtList.length}}条</span>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="cell">
+                            <span class="label">模式</span>
+                            <el-radio v-model="dialogue.model" label="xh">循环</el-radio>
+                            <el-radio v-model="dialogue.model" label="zd">指定数量</el-radio>
+                        </div>
+                        <div class="cell" v-if="dialogue.model === 'zd'">
+                            <el-input size="mini" v-model="dialogue.chatNum"></el-input>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="cell">
+                            <span class="label">是否回复</span>
+                            <el-input size="mini" style="width: 60px;" v-model="dialogue.responseAt"></el-input>
+                            <el-tooltip placement="bottom">
+                                <div slot="content">1：启用 0：关闭 0.1~0.9：概率启用 (启用后效果为两用户互聊时会互相@对方发出的消息进行回复)
+                                </div>
+                                <i class="el-icon-info"></i>
+                            </el-tooltip>
+                        </div>
+                    </div>
+                </div>
+                <el-button v-if="!dialogue.runState" size="mini" @click="startDialogue">运行</el-button>
+                <el-button v-else size="mini" loading>运行中</el-button>
+                <el-button v-if="dialogue.runState" size="mini" @click="stopDialogue">停止</el-button>
+            </div>
+            <div v-if="currentMenu === 3">
+                <div class="title"><i></i>用户</div>
+                <div class="proxy">
+                    <div class="row">
+                        <div class="cell">
+                            <span class="label">用户Auth</span>
+                            <el-input size="mini" v-model="monitor.authorization"></el-input>
+                        </div>
+                        <div class="cell">
+                            <span class="label">用户id</span>
+                            <el-input size="mini" v-model="monitor.accountId"></el-input>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="cell">
+                            <span class="label">代理ip</span>
+                            <el-input size="mini" v-model="monitor.proxyHost"></el-input>
+                        </div>
+                        <div class="cell">
+                            <span class="label">端口</span>
+                            <el-input size="mini" v-model="monitor.proxyPort"></el-input>
+                        </div>
+                    </div>
+                </div>
+                <div class="title"><i></i>监听</div>
+                <div class="chat">
+                    <div class="row">
+                        <div class="cell">
+                            <span class="label">频道id</span>
+                            <el-input size="mini" v-model="monitor.channelId"></el-input>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="cell">
+                            <span class="label">监听用户id</span>
+                            <el-input size="mini" v-model="monitor.accountIdTxtPath"></el-input>
+                        </div>
+                        <div class="cell">
+                            <el-button size="mini"  @click="loadAccountIdTxt">加载</el-button>
+                            <span class="tips" v-if="monitor.accountIdTxtLoadState">加载成功：共{{monitor.accountIdTxtList.length}}条</span>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="cell">
+                            <span class="label">关键词</span>
+                            <el-input size="mini" v-model="monitor.keywordTxtPath"></el-input>
+                        </div>
+                        <div class="cell">
+                            <el-button size="mini"  @click="loadKeywordTxt">加载</el-button>
+                            <span class="tips" v-if="monitor.keywordTxtLoadState">加载成功：共{{monitor.keywordTxtList.length}}条</span>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="cell">
+                            <span class="label">监听项</span>
+                            <el-checkbox-group v-model="monitor.items">
+                                <el-checkbox label="@全员"></el-checkbox>
+                                <el-checkbox label="@自己"></el-checkbox>
+                                <el-checkbox label="监听人发言+含关键字"></el-checkbox>
+                                <el-checkbox label="含关键字"></el-checkbox>
+                                <el-checkbox label="监听人发言"></el-checkbox>
+                            </el-checkbox-group>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="cell">
+                            <span class="label">监听后操作</span>
+                            <el-checkbox-group v-model="monitor.operate">
+                                <el-checkbox label="停止单聊"></el-checkbox>
+                                <el-checkbox label="停止互聊"></el-checkbox>
+                                <el-checkbox label="提示音报警"></el-checkbox>
+                            </el-checkbox-group>
+                        </div>
+                    </div>
+                </div>
+                <el-button v-if="!monitor.runState" size="mini" @click="startMonitor">运行</el-button>
+                <el-button v-else size="mini" loading>运行中</el-button>
+                <el-button v-if="monitor.runState" size="mini" @click="stopMonitor">停止</el-button>
+            </div>
+            <div v-if="currentMenu === 'about'">
+                <div class="heard Ginto">
+                    Discord Bots
+                </div>
+                <div class="introduce">
+                    <h1>当前版本: v1.0.0</h1>
+                    <h2>作者: <a href="#" @click="openUrl('https://github.com/Tian508')">Tian508</a></h2>
+                    <h2>本程序仅供学习交流,严禁用于商业用途</h2>
+                    <h2>开源地址: <a href="#" @click="openUrl('https://github.com/Tian508/discord-bot')">GitHub</a></h2>
+                    <h2>定制需求: 
+                        <el-popover
+                            placement="right"
+                            trigger="click">
+                            <img style="width: 250px;height: 250px;" src="./static/wx_qrcode.jpg">
+                            <a href="#" slot="reference">联系方式</a>
+                        </el-popover>
+                    </h3>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+<script src="./js/index.js"></script>
+
+</html>

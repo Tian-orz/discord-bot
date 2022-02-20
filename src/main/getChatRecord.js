@@ -1,11 +1,9 @@
 const axios = require("axios");
 const fs = require('fs');
-require('dotenv').config()
 
-const authorization = process.env.ACCOUNT1
-
-const proxyHost = process.env.PROXY_HOST // 代理ip
-const proxyPort = process.env.PROXY_PORT // 代理端口号
+let authorization = ''
+let proxyHost = '' // 代理ip
+let proxyPort = '' // 代理端口号
 
 /**
  * 爬取指定频道聊天记录（爬取话术）
@@ -27,10 +25,10 @@ const proxyPort = process.env.PROXY_PORT // 代理端口号
                 method: 'GET',
                 url: `https://discord.com/api/v9/channels/${channel_id}/messages?${beforeQuery}limit=50`,
                 headers: header,
-                proxy: (proxyHost && proxyPort)?{
+                proxy: {
                     host: proxyHost,
                     port: proxyPort
-                }: null,
+                },
             }).then(res => {
                 let data = res.data
                 data.forEach(v => {
@@ -40,11 +38,16 @@ const proxyPort = process.env.PROXY_PORT // 代理端口号
                     beforeId = data[data.length-1].id
                     getChatRecordLimit()
                 }else{
-                    recordList.forEach(v => {
-                        writeOutput(`${v}\n`);
+                    let timestamp = new Date().getTime()
+                    recordList.forEach((v,i) => {
+                        if(i === recordList.length-1){
+                            writeOutput(timestamp,`${v}`);
+                        }else{
+                            writeOutput(timestamp,`${v}\n`);
+                        }
                     })
-                    console.log('话术抓取成功')
-                    resolve()
+                    console.log(`话术抓取成功,话术-${timestamp}.txt`)
+                    resolve(`话术-${timestamp}.txt`)
                 }
             }).catch(e => {
                 reject(e)
@@ -54,11 +57,27 @@ const proxyPort = process.env.PROXY_PORT // 代理端口号
         getChatRecordLimit()
     })
 }
-getChatRecord('933731641858338826',50)
 
-
-function writeOutput(data) {
-    fs.appendFile('话术.txt', data, function (err) {
+function writeOutput(timestamp,data) {
+    let txtPath = process.env.PORTABLE_EXECUTABLE_DIR ? process.env.PORTABLE_EXECUTABLE_DIR : process.cwd()
+    fs.appendFile(`${txtPath}/话术-${timestamp}.txt`, data, function (err) {
         if (err) throw err;
     });
 }
+
+const main = (data) =>{
+    return new Promise(async (resolve, reject) => {
+        authorization = data.authorization
+        proxyHost = data.proxyHost
+        proxyPort = data.proxyPort
+        let channelId = data.channelId
+        let channelNum = data.channelNum
+        getChatRecord(channelId,channelNum).then(res => {
+            resolve(res)
+        }).catch(e =>{
+            reject(e)
+        })
+    })
+    
+}
+module.exports = main
