@@ -1,7 +1,7 @@
 # discord-bot
 
-## 详细教程
-https://mirror.xyz/0x3595801c3bd933E1a97c5c679B77A4306739223f/X1E-WmxTxfqlybAV0hUbwBjISsG7THXlpaQhB9tcjhA
+## Class2 详细教程
+https://mirror.xyz/0x3595801c3bd933E1a97c5c679B77A4306739223f/zp6zSGj7fYrxT8QWPIFKJ7VCvYZSrbN32SN6DkVOZ5o
 
 ## 设置
 1. 安装node和git
@@ -14,5 +14,5 @@ https://mirror.xyz/0x3595801c3bd933E1a97c5c679B77A4306739223f/X1E-WmxTxfqlybAV0h
 4. 安装运行脚本需要的依赖包,执行脚本
 ```
 - npm install
-- node chat.js OR node getChatRecord.js
+- node monitor.js
 ```
